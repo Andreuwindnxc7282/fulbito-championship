@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: fulbito_db
+      POSTGRES_USER: fulbito_user
+      POSTGRES_PASSWORD: fulbito_password_2025
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/create_database.sql:/docker-entrypoint-initdb.d/01-create-database.sql
+      - ./scripts/seed_data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fulbito_user -d fulbito_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-insecure-development-key-only
+      - DATABASE_URL=postgresql://fulbito_user:fulbito_password_2025@db:5432/fulbito_db
+      - ALLOWED_HOST=localhost
+    volumes:
+      - ./backend:/app
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    command: npm run dev
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - media_volume:/var/www/media
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  postgres_data:
+  media_volume:

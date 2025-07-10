@@ -1,0 +1,376 @@
+{
+  "tournament": {
+    "name": "International Champions Cup 2025",
+    "season": 2025,
+    "start_date": "2025-07-01",
+    "end_date": "2025-07-31",
+    "current_phase": "Gira de Verano - Estados Unidos",
+    "description": "Torneo de pretemporada con los mejores clubes europeos y americanos"
+  },
+  "teams": {
+    "Real Madrid": {
+      "coach": "Carlo Ancelotti",
+      "founded": 1902,
+      "country": "España",
+      "city": "Madrid",
+      "stadium": "Santiago Bernabéu",
+      "colors": [
+        "Blanco",
+        "Azul"
+      ],
+      "players": [
+        {
+          "name": "Thibaut Courtois",
+          "position": "GK",
+          "number": 1,
+          "age": 32
+        },
+        {
+          "name": "Dani Carvajal",
+          "position": "DEF",
+          "number": 2,
+          "age": 32
+        },
+        {
+          "name": "Eder Militão",
+          "position": "DEF",
+          "number": 3,
+          "age": 27
+        },
+        {
+          "name": "David Alaba",
+          "position": "DEF",
+          "number": 4,
+          "age": 32
+        },
+        {
+          "name": "Jude Bellingham",
+          "position": "MID",
+          "number": 5,
+          "age": 21
+        },
+        {
+          "name": "Luka Modrić",
+          "position": "MID",
+          "number": 10,
+          "age": 39
+        },
+        {
+          "name": "Vinícius Jr.",
+          "position": "FWD",
+          "number": 7,
+          "age": 24
+        },
+        {
+          "name": "Kylian Mbappé",
+          "position": "FWD",
+          "number": 9,
+          "age": 26
+        }
+      ]
+    },
+    "Manchester City": {
+      "coach": "Pep Guardiola",
+      "founded": 1880,
+      "country": "Inglaterra",
+      "city": "Manchester",
+      "stadium": "Etihad Stadium",
+      "colors": [
+        "Azul claro",
+        "Blanco"
+      ],
+      "players": [
+        {
+          "name": "Ederson",
+          "position": "GK",
+          "number": 31,
+          "age": 31
+        },
+        {
+          "name": "Kyle Walker",
+          "position": "DEF",
+          "number": 2,
+          "age": 34
+        },
+        {
+          "name": "Ruben Dias",
+          "position": "DEF",
+          "number": 3,
+          "age": 27
+        },
+        {
+          "name": "Josko Gvardiol",
+          "position": "DEF",
+          "number": 24,
+          "age": 23
+        },
+        {
+          "name": "Rodri",
+          "position": "MID",
+          "number": 16,
+          "age": 28
+        },
+        {
+          "name": "Kevin De Bruyne",
+          "position": "MID",
+          "number": 17,
+          "age": 33
+        },
+        {
+          "name": "Phil Foden",
+          "position": "MID",
+          "number": 47,
+          "age": 24
+        },
+        {
+          "name": "Erling Haaland",
+          "position": "FWD",
+          "number": 9,
+          "age": 24
+        }
+      ]
+    },
+    "Arsenal": {
+      "coach": "Mikel Arteta",
+      "founded": 1886,
+      "country": "Inglaterra",
+      "city": "London",
+      "stadium": "Emirates Stadium",
+      "colors": [
+        "Rojo",
+        "Blanco"
+      ],
+      "players": [
+        {
+          "name": "David Raya",
+          "position": "GK",
+          "number": 22,
+          "age": 29
+        },
+        {
+          "name": "Ben White",
+          "position": "DEF",
+          "number": 4,
+          "age": 27
+        },
+        {
+          "name": "William Saliba",
+          "position": "DEF",
+          "number": 2,
+          "age": 23
+        },
+        {
+          "name": "Gabriel Magalhães",
+          "position": "DEF",
+          "number": 6,
+          "age": 27
+        },
+        {
+          "name": "Declan Rice",
+          "position": "MID",
+          "number": 41,
+          "age": 26
+        },
+        {
+          "name": "Martin Ødegaard",
+          "position": "MID",
+          "number": 8,
+          "age": 26
+        },
+        {
+          "name": "Bukayo Saka",
+          "position": "FWD",
+          "number": 7,
+          "age": 23
+        },
+        {
+          "name": "Gabriel Jesus",
+          "position": "FWD",
+          "number": 9,
+          "age": 27
+        }
+      ]
+    },
+    "Inter Miami": {
+      "coach": "Tata Martino",
+      "founded": 2018,
+      "country": "Estados Unidos",
+      "city": "Miami",
+      "stadium": "DRV PNK Stadium",
+      "colors": [
+        "Rosa",
+        "Negro"
+      ],
+      "players": [
+        {
+          "name": "Drake Callender",
+          "position": "GK",
+          "number": 1,
+          "age": 27
+        },
+        {
+          "name": "Jordi Alba",
+          "position": "DEF",
+          "number": 18,
+          "age": 35
+        },
+        {
+          "name": "Sergio Busquets",
+          "position": "MID",
+          "number": 5,
+          "age": 36
+        },
+        {
+          "name": "Lionel Messi",
+          "position": "FWD",
+          "number": 10,
+          "age": 37
+        },
+        {
+          "name": "Luis Suárez",
+          "position": "FWD",
+          "number": 9,
+          "age": 38
+        },
+        {
+          "name": "Leonardo Campana",
+          "position": "FWD",
+          "number": 19,
+          "age": 24
+        }
+      ]
+    }
+  },
+  "matches": [
+    {
+      "date": "2025-02-08 00:00:00",
+      "home_team": "Real Madrid",
+      "away_team": "Manchester City",
+      "home_score": 3,
+      "away_score": 2,
+      "status": "finished"
+    },
+    {
+      "date": "2025-02-08 02:00:00",
+      "home_team": "Arsenal",
+      "away_team": "Inter Miami",
+      "home_score": 1,
+      "away_score": 2,
+      "status": "finished"
+    }
+  ],
+  "standings": [
+    {
+      "team": "Arsenal",
+      "played": 12,
+      "wins": 9,
+      "draws": 3,
+      "losses": 0,
+      "goals_for": 32,
+      "goals_against": 7,
+      "goal_difference": 25,
+      "points": 30
+    },
+    {
+      "team": "Manchester City",
+      "played": 11,
+      "wins": 7,
+      "draws": 1,
+      "losses": 3,
+      "goals_for": 22,
+      "goals_against": 7,
+      "goal_difference": 15,
+      "points": 22
+    },
+    {
+      "team": "Inter Miami",
+      "played": 9,
+      "wins": 7,
+      "draws": 0,
+      "losses": 2,
+      "goals_for": 8,
+      "goals_against": 10,
+      "goal_difference": -2,
+      "points": 21
+    },
+    {
+      "team": "Real Madrid",
+      "played": 10,
+      "wins": 4,
+      "draws": 2,
+      "losses": 4,
+      "goals_for": 19,
+      "goals_against": 11,
+      "goal_difference": 8,
+      "points": 14
+    }
+  ],
+  "top_scorers": [
+    {
+      "player": "Vinícius Jr.",
+      "team": "Real Madrid",
+      "goals": 13,
+      "position": "FWD"
+    },
+    {
+      "player": "Kylian Mbappé",
+      "team": "Real Madrid",
+      "goals": 11,
+      "position": "FWD"
+    },
+    {
+      "player": "Lionel Messi",
+      "team": "Inter Miami",
+      "goals": 9,
+      "position": "FWD"
+    },
+    {
+      "player": "Kevin De Bruyne",
+      "team": "Manchester City",
+      "goals": 8,
+      "position": "MID"
+    },
+    {
+      "player": "Phil Foden",
+      "team": "Manchester City",
+      "goals": 8,
+      "position": "MID"
+    },
+    {
+      "player": "Luka Modrić",
+      "team": "Real Madrid",
+      "goals": 7,
+      "position": "MID"
+    },
+    {
+      "player": "Erling Haaland",
+      "team": "Manchester City",
+      "goals": 7,
+      "position": "FWD"
+    },
+    {
+      "player": "Jude Bellingham",
+      "team": "Real Madrid",
+      "goals": 6,
+      "position": "MID"
+    },
+    {
+      "player": "Rodri",
+      "team": "Manchester City",
+      "goals": 6,
+      "position": "MID"
+    },
+    {
+      "player": "Gabriel Jesus",
+      "team": "Arsenal",
+      "goals": 3,
+      "position": "FWD"
+    }
+  ],
+  "statistics": {
+    "total_teams": 4,
+    "total_players": 30,
+    "matches_played": 2,
+    "total_goals": 81
+  }
+}
