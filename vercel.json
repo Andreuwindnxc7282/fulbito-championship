@@ -1,11 +1,11 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "installCommand": "pnpm install",
-  "buildCommand": "pnpm run build",
-  "devCommand": "pnpm run dev",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
   "outputDirectory": ".next",
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://fulbito-championship-4-backend.vercel.app"
+    "NEXT_PUBLIC_API_URL": "https://fulbito-championship-backend.vercel.app"
   }
 }
