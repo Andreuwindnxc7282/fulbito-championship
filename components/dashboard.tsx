@@ -3,9 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Trophy, Users, Calendar, TrendingUp, Clock, MapPin, Play, Timer, Tv, RefreshCw } from "lucide-react"
+import { Trophy, Users, Calendar, TrendingUp, Clock, MapPin, Play, Timer, Tv, RefreshCw, Key } from "lucide-react"
 import { api } from "@/lib/api"
 import { useEffect, useState } from "react"
+import { setTempToken, clearTokens, hasToken, autoRenewToken } from "@/lib/temp-token"
+import { SystemStatusCard } from "./system-status-card"
 
 interface DashboardStats {
   total_teams: number
@@ -51,30 +53,116 @@ export function Dashboard() {
       setLoading(true)
       setError(null)
       
-      // Obtener datos del dashboard y top scorers
+      // Auto-renovar token antes de hacer las peticiones
+      const tokenRenewed = await autoRenewToken();
+      if (tokenRenewed) {
+        console.log('🔄 Token renovado automáticamente antes de cargar datos');
+      }
+      
+      // Si no hay token, establecer uno automáticamente
+      if (!hasToken()) {
+        console.log('🔄 No hay token, estableciendo uno automáticamente...');
+        await setTempToken();
+      }
+      
+      // Obtener datos del dashboard y top scorers con manejo de errores mejorado
       const [dashboardResponse, scorersResponse] = await Promise.all([
-        api.get('/dashboard/stats/'),
-        api.get('/dashboard/top-scorers/')
+        api.get('/dashboard/stats/').catch(err => {
+          console.log('Error en /dashboard/stats/:', err.message);
+          throw err;
+        }),
+        api.get('/dashboard/top-scorers/').catch(err => {
+          console.log('Error en /dashboard/top-scorers/:', err.message);
+          throw err;
+        })
       ])
       
       setStats(dashboardResponse.data)
       setTopScorers(scorersResponse.data)
       
       setLastUpdated(new Date())
-    } catch (error) {
+      console.log('✅ Dashboard cargado exitosamente');
+    } catch (error: any) {
       console.error('Error loading dashboard data:', error)
-      setError('No se pudo conectar con el backend.')
+      
+      // Determinar tipo de error y mostrar mensaje apropiado
+      let errorMessage = 'Error desconocido al cargar datos';
+      
+      if (!error?.response) {
+        // Error de red/conexión
+        errorMessage = 'No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000';
+      } else if (error.response?.status === 401) {
+        // Error de autenticación
+        errorMessage = 'Error de autenticación. Intentando renovar token automáticamente...';
+        
+        // Intentar renovar token y reintentar una vez más
+        try {
+          console.log('🔄 Error 401, renovando token y reintentando...');
+          await setTempToken();
+          
+          const [dashboardResponse, scorersResponse] = await Promise.all([
+            api.get('/dashboard/stats/'),
+            api.get('/dashboard/top-scorers/')
+          ])
+          setStats(dashboardResponse.data)
+          setTopScorers(scorersResponse.data)
+          setLastUpdated(new Date())
+          console.log('✅ Dashboard cargado exitosamente después de renovar token');
+          return;
+        } catch (retryError) {
+          console.error('Error en segundo intento:', retryError);
+          errorMessage = 'Error de autenticación persistente. Verifica la configuración del sistema.';
+        }
+      } else if (error.response?.status >= 500) {
+        // Error del servidor
+        errorMessage = `Error del servidor (${error.response.status}). El backend puede estar iniciándose o tener problemas.`;
+      } else {
+        // Otros errores HTTP
+        errorMessage = `Error HTTP ${error.response?.status}: ${error.response?.data?.message || 'Error desconocido'}`;
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    console.log('🚀 Dashboard iniciándose...');
+    
+    // Auto-establecer token si no existe
+    if (!hasToken()) {
+      console.log('🔄 No hay token al iniciar, estableciendo automáticamente...');
+      setTempToken();
+    }
+    
+    // Cargar datos del dashboard
     loadDashboardData()
+    
+    // Configurar auto-renovación cada 30 minutos
+    const autoRenewInterval = setInterval(() => {
+      const renewed = autoRenewToken();
+      if (renewed) {
+        console.log('🔄 Token auto-renovado en intervalor programado');
+        loadDashboardData(); // Recargar datos con nuevo token
+      }
+    }, 30 * 60 * 1000); // 30 minutos
+    
+    return () => clearInterval(autoRenewInterval);
   }, [])
 
   const handleRefresh = () => {
     loadDashboardData()
+  }
+
+  const handleSetTempToken = () => {
+    setTempToken()
+    loadDashboardData()
+  }
+
+  const handleClearTokens = () => {
+    clearTokens()
+    setError('Token eliminado. Establece un token para acceder a los datos.')
   }
 
   if (loading) {
@@ -91,11 +179,29 @@ export function Dashboard() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={handleRefresh} variant="outline">
-            Reintentar
-          </Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={handleRefresh} variant="outline">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reintentar
+            </Button>
+            {!hasToken() && (
+              <Button onClick={handleSetTempToken} variant="default">
+                <Key className="h-4 w-4 mr-2" />
+                Establecer Token
+              </Button>
+            )}
+            {hasToken() && (
+              <Button onClick={handleClearTokens} variant="destructive">
+                <Key className="h-4 w-4 mr-2" />
+                Limpiar Tokens
+              </Button>
+            )}
+          </div>
+          <p className="text-sm text-gray-600">
+            {hasToken() ? 'Token encontrado - Verifica que el backend esté funcionando' : 'No hay token de autenticación'}
+          </p>
         </div>
       </div>
     )
@@ -137,6 +243,38 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* System Status Card */}
+      <SystemStatusCard />
+      
+      {/* Automated Development Tools Bar */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm font-medium">🤖 Sistema Automático de Tokens</span>
+            <span className="text-xs text-gray-600 bg-green-100 px-2 py-1 rounded">
+              Auto-renovación activada
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleSetTempToken} variant="outline" size="sm">
+              <Key className="h-4 w-4 mr-1" />
+              Forzar Token
+            </Button>
+            <Button onClick={handleClearTokens} variant="outline" size="sm">
+              <Key className="h-4 w-4 mr-1" />
+              Limpiar
+            </Button>
+            <span className="text-xs text-gray-600">
+              Token: {hasToken() ? '✅ Válido' : '🔄 Auto-estableciendo...'}
+            </span>
+          </div>
+        </div>
+        <div className="mt-2 text-xs text-gray-600">
+          ⚡ El sistema detecta automáticamente tokens expirados y los renueva sin intervención manual
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>

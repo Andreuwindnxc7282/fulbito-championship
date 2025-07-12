@@ -3,20 +3,50 @@ name: Deploy Fulbito Championship
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  deploy-info:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_fulbito
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd backend
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/test_fulbito
+      run: |
+        cd backend
+        python manage.py test
+
+  test-frontend:
     runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Display deployment info
-      run: |
-        echo "🚀 Deployment ready!"
-        echo "✅ Backend: Deploy manually to Render"
-        echo "✅ Frontend: Deploy manually to Vercel"
-        echo "✅ Repository: https://github.com/${{ github.repository }}"
     
     - name: Set up Node.js
       uses: actions/setup-node@v3

@@ -124,7 +124,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
     search_fields = ['first_name', 'last_name']
     filterset_fields = ['team', 'position']
     ordering_fields = ['first_name', 'last_name', 'birth_date']
-    ordering = ['first_name', 'last_name']
+    ordering = ['first_name']
 
 
 class VenueViewSet(viewsets.ModelViewSet):

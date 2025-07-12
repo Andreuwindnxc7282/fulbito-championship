@@ -196,14 +196,51 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
-# CORS Configuration
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "https://your-frontend-domain.vercel.app",
-]
+# CORS Configuration - Más permisivo para desarrollo
+if DEBUG:
+    # En desarrollo, permite conexiones desde cualquier puerto local
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://localhost:3002",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:3002",
+    ]
+else:
+    # En producción, más restrictivo
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000", 
+        "http://127.0.0.1:3001",
+        "https://your-frontend-domain.vercel.app",
+    ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Headers adicionales para CORS
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Swagger settings
 SWAGGER_SETTINGS = {

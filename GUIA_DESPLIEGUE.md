@@ -1,230 +1,194 @@
-# Guía de Despliegue - Proyecto Fulbito Championship
+# 🚀 Guía Completa de Despliegue - Fulbito Championship
 
-## 🚀 CONFIGURACIÓN PARA DESPLIEGUE PÚBLICO
+## 📋 Resumen del Proyecto
 
-### 📋 Servicios a Utilizar
-- **Backend**: Render (Django + PostgreSQL)
-- **Frontend**: Vercel (React/Next.js)
-- **Base de Datos**: PostgreSQL en Render
+**Fulbito Championship** es un sistema completo de gestión de campeonatos con:
+- **Backend**: Django REST API con JWT, PostgreSQL
+- **Frontend**: Next.js con TypeScript, TailwindCSS
+- **Características**: CRUD jugadores, estadísticas, dashboard admin, autenticación
 
 ---
 
-## 🔧 PASO 1: PREPARAR BACKEND PARA RENDER
+## 🔄 PASO 1: DEPLOYMENT BACKEND EN RENDER
 
-### 1.1 Crear archivo requirements.txt actualizado
-```bash
-cd backend
-pip freeze > requirements.txt
+### 1.1 Crear cuenta en Render
+1. Ve a [render.com](https://render.com)
+2. Crea cuenta gratuita con GitHub
+3. Conecta tu cuenta de GitHub
+
+### 1.2 Crear Web Service
+1. En Render Dashboard, click **"New"** → **"Web Service"**
+2. Conecta repositorio: `Andreuwindnxc7282/fulbito-championship`
+3. Configurar servicio:
+   - **Name**: `fulbito-backend`
+   - **Region**: `Oregon (US West)`
+   - **Branch**: `main`
+   - **Root Directory**: `backend`
+   - **Runtime**: `Python 3`
+   - **Build Command**: `./build.sh`
+   - **Start Command**: `gunicorn fulbito.wsgi:application --bind 0.0.0.0:$PORT`
+
+### 1.3 Variables de Entorno
+En la sección **Environment Variables**:
+
+```env
+SECRET_KEY=tu-clave-secreta-super-segura-aqui
+DEBUG=False
+DJANGO_SETTINGS_MODULE=fulbito.settings_prod
+ADMIN_PASSWORD=admin123
+ALLOWED_HOST=fulbito-backend.onrender.com
 ```
 
-### 1.2 Configurar settings para producción
-Crear `backend/fulbito/settings_prod.py`:
+### 1.4 Plan y Deploy
+1. Selecciona **Free Plan** (suficiente para desarrollo)
+2. Click **"Create Web Service"**
+3. Render automáticamente:
+   - Clona el repositorio
+   - Ejecuta `build.sh`
+   - Instala dependencias
+   - Configura PostgreSQL
+   - Ejecuta migraciones
+   - Crea superusuario
+
+---
+
+## 🎯 PASO 2: DEPLOYMENT FRONTEND EN VERCEL
+
+### 2.1 Preparar Frontend
+1. Ve a tu proyecto local
+2. Actualiza `.env.production`:
+
+```env
+NEXT_PUBLIC_API_URL=https://fulbito-backend.onrender.com
+NEXT_PUBLIC_FRONTEND_URL=https://fulbito-championship.vercel.app
+```
+
+### 2.2 Deploy en Vercel
+1. Ve a [vercel.com](https://vercel.com)
+2. Conecta con GitHub
+3. Importa proyecto: `Andreuwindnxc7282/fulbito-championship`
+4. Configurar:
+   - **Framework Preset**: `Next.js`
+   - **Root Directory**: `./` (raíz del proyecto)
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `.next`
+
+### 2.3 Variables de Entorno en Vercel
+En Project Settings → Environment Variables:
+
+```env
+NEXT_PUBLIC_API_URL=https://fulbito-backend.onrender.com
+NEXT_PUBLIC_FRONTEND_URL=https://fulbito-championship.vercel.app
+```
+
+### 2.4 Deploy
+1. Click **"Deploy"**
+2. Vercel construirá y desplegará automáticamente
+3. Obtienes URL: `https://fulbito-championship.vercel.app`
+
+---
+
+## 🔧 PASO 3: CONFIGURACIÓN POST-DEPLOY
+
+### 3.1 Actualizar CORS en Backend
+Cuando tengas la URL de Vercel, actualiza `settings_prod.py`:
 
 ```python
-from .settings import *
-import os
-import dj_database_url
-
-# CONFIGURACIÓN DE PRODUCCIÓN
-DEBUG = False
-ALLOWED_HOSTS = ['*']
-
-# Base de datos PostgreSQL
-DATABASES = {
-    'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-}
-
-# Configuración de archivos estáticos
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# CORS para frontend desplegado
 CORS_ALLOWED_ORIGINS = [
-    "https://fulbito-championship.vercel.app",  # Cambiar por tu URL de Vercel
-    "http://localhost:3000",  # Para desarrollo local
+    "http://localhost:3000",
+    "https://fulbito-championship.vercel.app",  # TU URL REAL
 ]
-
-# JWT para producción
-SIMPLE_JWT.update({
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-})
 ```
 
-### 1.3 Crear build.sh para Render
+### 3.2 Redeploy Backend
+1. Haz commit y push de los cambios
+2. Render redesplegará automáticamente
+
+---
+
+## ✅ PASO 4: VERIFICACIÓN
+
+### 4.1 URLs Esperadas
+- **Backend**: `https://fulbito-backend.onrender.com`
+- **API Admin**: `https://fulbito-backend.onrender.com/admin/`
+- **Swagger**: `https://fulbito-backend.onrender.com/swagger/`
+- **Frontend**: `https://fulbito-championship.vercel.app`
+
+### 4.2 Pruebas Básicas
+1. **API Health**: `GET https://fulbito-backend.onrender.com/api/health/`
+2. **Login**: `POST https://fulbito-backend.onrender.com/api/auth/login/`
+3. **Admin Panel**: Accede con `admin/admin123`
+4. **Frontend**: Prueba login y dashboard
+
+---
+
+## 🛠️ COMANDOS ÚTILES
+
+### Verificar Deploy Local
 ```bash
-#!/usr/bin/env bash
-# build.sh
+# Verificar backend
+python backend/verify_deployment.py
 
-set -o errexit
-
-pip install -r requirements.txt
-python manage.py collectstatic --no-input
-python manage.py migrate
-python manage.py loaddata initial_data.json
+# Probar API
+python backend/test_endpoints.py
 ```
 
-### 1.4 Crear Dockerfile (opcional)
-```dockerfile
-FROM python:3.11-slim
+### Logs en Render
+- Ve a tu servicio en Render
+- Click en **"Logs"** para ver errores
+- Útil para debugging
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-RUN python manage.py collectstatic --no-input
-
-EXPOSE 8000
-CMD ["gunicorn", "fulbito.wsgi:application", "--bind", "0.0.0.0:8000"]
-```
+### Redeploy Manual
+- En Render: Click **"Manual Deploy"**
+- En Vercel: Click **"Redeploy"**
 
 ---
 
-## 🌐 PASO 2: PREPARAR FRONTEND PARA VERCEL
+## 🚨 TROUBLESHOOTING
 
-### 2.1 Actualizar variables de entorno
-Crear `.env.local`:
-```
-NEXT_PUBLIC_API_URL=https://fulbito-backend.onrender.com/api
-NEXT_PUBLIC_BASE_URL=https://fulbito-backend.onrender.com
-```
+### Error 500 en Backend
+1. Revisa logs en Render
+2. Verifica variables de entorno
+3. Asegúrate que PostgreSQL esté conectado
 
-### 2.2 Crear vercel.json
-```json
-{
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "functions": {
-    "app/[[...slug]]/route.ts": {
-      "maxDuration": 30
-    }
-  }
-}
-```
+### Error CORS en Frontend
+1. Verifica `CORS_ALLOWED_ORIGINS` en settings
+2. Usa la URL exacta de Vercel (con https)
+
+### Build Fails
+1. Verifica que `build.sh` tenga permisos
+2. Revisa `requirements_prod.txt`
+3. Chequea sintaxis en `settings_prod.py`
 
 ---
 
-## 📦 PASO 3: DESPLEGAR EN RENDER
+## 📊 ESTADO ACTUAL
 
-### 3.1 Preparar repositorio
-1. Subir proyecto a GitHub
-2. Asegurar que `build.sh` tenga permisos de ejecución
+✅ **Completado**:
+- Archivos de deployment creados
+- GitHub repo configurado
+- Scripts de build listos
+- Documentación completa
 
-### 3.2 Configurar en Render
-1. Ir a https://render.com
-2. Crear cuenta/iniciar sesión
-3. "New Web Service" → Conectar GitHub
-4. Seleccionar repositorio
-5. Configurar:
-   - **Name**: fulbito-backend
-   - **Environment**: Python 3
-   - **Build Command**: `./build.sh`
-   - **Start Command**: `gunicorn fulbito.wsgi:application`
-   - **Plan**: Free
+🔄 **En Progreso**:
+- Deployment en Render
+- Configuración de PostgreSQL
+- Conexión Frontend-Backend
 
-### 3.3 Variables de entorno en Render
-```
-DJANGO_SETTINGS_MODULE=fulbito.settings_prod
-SECRET_KEY=tu-secret-key-super-segura
-DATABASE_URL=(auto-generada por Render)
-```
+🎯 **Próximos Pasos**:
+1. Crear Web Service en Render
+2. Deploy Frontend en Vercel
+3. Configurar CORS
+4. Pruebas finales
 
 ---
 
-## 🚀 PASO 4: DESPLEGAR EN VERCEL
+## 📞 SOPORTE
 
-### 4.1 Configurar en Vercel
-1. Ir a https://vercel.com
-2. Crear cuenta/iniciar sesión
-3. "New Project" → Import Git Repository
-4. Seleccionar repositorio
-5. Configurar:
-   - **Framework**: Next.js
-   - **Root Directory**: ./
-   - **Build Command**: `npm run build`
+Si encuentras errores:
+1. Revisa logs en Render/Vercel
+2. Verifica variables de entorno
+3. Asegúrate que las URLs sean correctas
+4. Consulta esta guía para troubleshooting
 
-### 4.2 Variables de entorno en Vercel
-```
-NEXT_PUBLIC_API_URL=https://fulbito-backend.onrender.com/api
-NEXT_PUBLIC_BASE_URL=https://fulbito-backend.onrender.com
-```
-
----
-
-## 🔄 PASO 5: CONFIGURAR CI/CD
-
-### 5.1 Crear GitHub Actions
-`.github/workflows/deploy.yml`:
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v2
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '18'
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Build frontend
-      run: npm run build
-      
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v20
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.ORG_ID }}
-        vercel-project-id: ${{ secrets.PROJECT_ID }}
-```
-
----
-
-## 📋 CHECKLIST DE DESPLIEGUE
-
-### ✅ Backend (Render)
-- [ ] `requirements.txt` actualizado
-- [ ] `settings_prod.py` configurado
-- [ ] `build.sh` creado
-- [ ] Variables de entorno configuradas
-- [ ] PostgreSQL configurado
-- [ ] CORS actualizado
-
-### ✅ Frontend (Vercel)
-- [ ] `.env.local` configurado
-- [ ] `vercel.json` creado
-- [ ] URLs del backend actualizadas
-- [ ] Build funcionando localmente
-
-### ✅ Integración
-- [ ] Backend desplegado y funcionando
-- [ ] Frontend desplegado y funcionando
-- [ ] Comunicación entre frontend y backend
-- [ ] Autenticación JWT funcionando
-- [ ] Base de datos poblada
-
----
-
-## 🎯 URLS FINALES ESPERADAS
-
-- **Backend**: https://fulbito-backend.onrender.com
-- **Frontend**: https://fulbito-championship.vercel.app
-- **API Docs**: https://fulbito-backend.onrender.com/swagger/
-- **Admin**: https://fulbito-backend.onrender.com/admin/
-
----
-
-¿Quieres que empecemos con algún paso específico?
+**¡El deployment está listo! Solo faltan los pasos finales en las plataformas.** 🚀

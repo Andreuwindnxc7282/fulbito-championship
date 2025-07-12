@@ -1,168 +1,174 @@
-# 🚀 DESPLIEGUE PÚBLICO - Proyecto Fulbito Championship
+# 📝 Instrucciones de Despliegue - Paso a Paso
 
-## 📋 PASOS PARA COMPLETAR EL DESPLIEGUE
-
-### ✅ ARCHIVOS PREPARADOS PARA DESPLIEGUE
-
-Ya se han creado todos los archivos necesarios:
-
-- ✅ `backend/settings_prod.py` - Configuración de producción
-- ✅ `backend/build.sh` - Script de build para Render
-- ✅ `backend/Procfile` - Configuración de proceso
-- ✅ `backend/requirements_prod.txt` - Dependencias de producción
-- ✅ `vercel.json` - Configuración para Vercel
-- ✅ `.env.production` - Variables de entorno
-- ✅ `.github/workflows/deploy.yml` - CI/CD (si existe)
+## 🎯 OBJETIVO
+Desplegar el sistema **Fulbito Championship** en producción usando:
+- **Render** (Backend Django)
+- **Vercel** (Frontend Next.js)
 
 ---
 
-## 🌐 PASO 1: DESPLEGAR BACKEND EN RENDER
+## 🚀 PASO A PASO - RENDER (BACKEND)
 
-### 1. Subir a GitHub
-```bash
-# Desde la raíz del proyecto
-git init
-git add .
-git commit -m "Preparado para despliegue"
-git branch -M main
-git remote add origin https://github.com/TU-USUARIO/fulbito-championship.git
-git push -u origin main
+### 1. Acceso a Render
+1. Abre tu navegador y ve a: https://render.com
+2. Click en **"Get Started for Free"**
+3. Selecciona **"GitHub"** para conectar tu cuenta
+4. Autoriza el acceso a tu repositorio
+
+### 2. Crear Web Service
+1. En el dashboard de Render, click **"New"** (botón azul)
+2. Selecciona **"Web Service"**
+3. Busca y selecciona: `Andreuwindnxc7282/fulbito-championship`
+4. Click **"Connect"**
+
+### 3. Configurar el Servicio
+Completa el formulario con estos datos exactos:
+
+```
+Name: fulbito-backend
+Region: Oregon (US West)
+Branch: main
+Root Directory: backend
+Runtime: Python 3
+Build Command: ./build.sh
+Start Command: gunicorn fulbito.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
-### 2. Configurar en Render
-1. Ve a https://render.com
-2. Crea una cuenta gratuita
-3. "New Web Service" → "Build and deploy from a Git repository"
-4. Conecta tu repositorio de GitHub
-5. Configuración:
-   - **Name**: `fulbito-backend`
-   - **Environment**: Python 3
-   - **Build Command**: `./build.sh`
-   - **Start Command**: `gunicorn fulbito.wsgi:application`
-   - **Root Directory**: `backend`
+### 4. Variables de Entorno
+En la sección **"Environment Variables"**, agrega:
 
-### 3. Variables de Entorno en Render
 ```
-DJANGO_SETTINGS_MODULE=fulbito.settings_prod
-SECRET_KEY=tu-clave-secreta-muy-larga-y-segura-12345
-PYTHONPATH=/opt/render/project/src
+SECRET_KEY = django-insecure-your-secret-key-here-change-in-production
+DEBUG = False
+DJANGO_SETTINGS_MODULE = fulbito.settings_prod
+ADMIN_PASSWORD = admin123
 ```
 
-### 4. Agregar PostgreSQL
-- En Render Dashboard → "New PostgreSQL"
-- Copiar la `DATABASE_URL` generada
-- Agregar como variable de entorno en tu Web Service
+### 5. Crear Servicio
+1. Selecciona **"Free"** plan
+2. Click **"Create Web Service"**
+3. Espera que termine el build (5-10 minutos)
+4. Anota la URL que te asigna Render
 
 ---
 
-## 🎨 PASO 2: DESPLEGAR FRONTEND EN VERCEL
+## 🌐 PASO A PASO - VERCEL (FRONTEND)
 
-### 1. Configurar en Vercel
-1. Ve a https://vercel.com
-2. Crea una cuenta gratuita
-3. "New Project" → Import Git Repository
-4. Selecciona tu repositorio
-5. Configuración automática (Next.js detectado)
+### 1. Acceso a Vercel
+1. Ve a: https://vercel.com
+2. Click **"Start Deploying"**
+3. Selecciona **"Continue with GitHub"**
+4. Autoriza el acceso
 
-### 2. Variables de Entorno en Vercel
+### 2. Importar Proyecto
+1. Click **"Add New..."** → **"Project"**
+2. Busca: `Andreuwindnxc7282/fulbito-championship`
+3. Click **"Import"**
+
+### 3. Configurar Proyecto
 ```
-NEXT_PUBLIC_API_URL=https://fulbito-backend.onrender.com/api
-NEXT_PUBLIC_BASE_URL=https://fulbito-backend.onrender.com
+Framework Preset: Next.js
+Root Directory: ./
+Build Command: npm run build
+Output Directory: .next
+Install Command: npm install
 ```
 
-### 3. Actualizar CORS en Backend
-Una vez obtengas la URL de Vercel, actualiza `CORS_ALLOWED_ORIGINS` en `settings_prod.py`:
+### 4. Variables de Entorno
+En **"Environment Variables"**:
+
+```
+NEXT_PUBLIC_API_URL = https://TU-URL-DE-RENDER.onrender.com
+NEXT_PUBLIC_FRONTEND_URL = https://TU-PROYECTO.vercel.app
+```
+
+**⚠️ IMPORTANTE**: Reemplaza con tus URLs reales
+
+### 5. Deploy
+1. Click **"Deploy"**
+2. Espera que termine (3-5 minutos)
+3. Anota tu URL de Vercel
+
+---
+
+## 🔧 CONFIGURACIÓN FINAL
+
+### 1. Actualizar CORS
+Con tu URL de Vercel, actualiza el backend:
+
+1. Ve a tu proyecto local
+2. Edita `backend/fulbito/settings_prod.py`
+3. Actualiza esta línea:
+
 ```python
 CORS_ALLOWED_ORIGINS = [
-    "https://tu-proyecto.vercel.app",  # Tu URL real de Vercel
     "http://localhost:3000",
+    "https://TU-URL-VERCEL.vercel.app",  # 👈 TU URL REAL
 ]
 ```
 
----
-
-## 🔧 PASO 3: VERIFICAR FUNCIONAMIENTO
-
-### URLs Esperadas:
-- **Backend**: https://fulbito-backend.onrender.com
-- **API Docs**: https://fulbito-backend.onrender.com/swagger/
-- **Admin Panel**: https://fulbito-backend.onrender.com/admin/
-- **Frontend**: https://tu-proyecto.vercel.app
-
-### Credenciales por defecto:
-- **Usuario**: admin
-- **Contraseña**: admin123
-
-### Pruebas a realizar:
-1. ✅ Backend responde en `/api/`
-2. ✅ Swagger accesible
-3. ✅ Admin panel funciona
-4. ✅ Frontend carga correctamente
-5. ✅ Login funciona
-6. ✅ Dashboard muestra datos
-7. ✅ CRUD de jugadores funciona
+### 2. Redeploy Backend
+1. Guarda los cambios
+2. Haz commit: `git add . && git commit -m "Update CORS for production"`
+3. Push: `git push origin main`
+4. Render redesplegará automáticamente
 
 ---
 
-## ⚡ COMANDOS ÚTILES
+## ✅ VERIFICACIÓN
 
-### Para hacer cambios y redesplegar:
-```bash
-# Hacer cambios
-git add .
-git commit -m "Actualización"
-git push
+### URLs a Probar
+Reemplaza con tus URLs reales:
 
-# Render y Vercel se actualizan automáticamente
-```
+1. **Backend API**: `https://TU-BACKEND.onrender.com/api/health/`
+2. **Admin Django**: `https://TU-BACKEND.onrender.com/admin/`
+3. **Swagger**: `https://TU-BACKEND.onrender.com/swagger/`
+4. **Frontend**: `https://TU-FRONTEND.vercel.app`
 
-### Para debugging en Render:
-- Ve a tu servicio en Render
-- Pestaña "Logs" para ver errores
-- Pestaña "Events" para ver deploys
+### Pruebas Básicas
+1. **Admin Panel**: 
+   - Usuario: `admin`
+   - Password: `admin123`
+   
+2. **Frontend Login**:
+   - Mismo usuario/password
+   - Dashboard debe cargar con datos
 
----
-
-## 🎯 CHECKLIST FINAL
-
-### ✅ Backend (Render)
-- [ ] Repositorio subido a GitHub
-- [ ] Web Service creado en Render
-- [ ] PostgreSQL configurado
-- [ ] Variables de entorno agregadas
-- [ ] Build exitoso
-- [ ] API respondiendo
-
-### ✅ Frontend (Vercel)
-- [ ] Proyecto importado en Vercel
-- [ ] Variables de entorno configuradas
-- [ ] Build exitoso
-- [ ] Sitio web accesible
-
-### ✅ Integración
-- [ ] Frontend se conecta al backend
-- [ ] CORS configurado correctamente
-- [ ] Login funciona
-- [ ] Todas las funcionalidades operativas
+3. **API Endpoints**:
+   - `/api/players/` - Lista de jugadores
+   - `/api/matches/` - Lista de partidos
+   - `/api/standings/` - Tabla de posiciones
 
 ---
 
-## 🏆 RESULTADO ESPERADO
+## 🚨 ERRORES COMUNES
 
-Una vez completado, tendrás:
-- ✅ **Backend público** en Render con PostgreSQL
-- ✅ **Frontend público** en Vercel
-- ✅ **URLs públicas** funcionando
-- ✅ **30/30 puntos** en el proyecto integrador
+### "Application Error" en Render
+- Revisa los logs en Render
+- Verifica que `build.sh` tenga permisos
+- Chequea variables de entorno
+
+### "CORS Error" en Frontend
+- Verifica `CORS_ALLOWED_ORIGINS` en settings
+- Usa https:// en las URLs
+- Redeploy backend después de cambios
+
+### "Build Failed" en Vercel
+- Verifica que `package.json` esté en la raíz
+- Chequea que las variables de entorno estén correctas
+- Asegúrate que la URL del backend sea correcta
 
 ---
 
-## 📞 AYUDA
+## 📞 SIGUIENTE PASO
 
-Si necesitas ayuda con algún paso:
-1. Revisa los logs en Render/Vercel
-2. Verifica las variables de entorno
-3. Confirma que las URLs estén correctas
-4. Revisa la configuración de CORS
+**¡Ahora sigue estos pasos exactos!**
 
-¡Tu proyecto estará 100% completo! 🎉
+1. **Primero**: Deploy backend en Render
+2. **Segundo**: Deploy frontend en Vercel
+3. **Tercero**: Actualizar CORS con URL real
+4. **Cuarto**: Verificar que todo funcione
+
+**¿Listo para comenzar?** 🚀
+
+Empezamos con Render. Ve al navegador y sigue el "PASO A PASO - RENDER" de arriba.
